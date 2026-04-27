@@ -1,0 +1,339 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL") 
+}
+// ─── ENUMS ────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  RAZORPAY
+  STRIPE
+  CASH
+  UPI
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FLAT
+}
+
+// ─── USERS & AUTH ─────────────────────────────────────────
+
+model User {
+  id                String    @id @default(cuid())
+  name              String    @db.VarChar(100)
+  email             String    @unique @db.VarChar(191)
+  phone             String?   @db.VarChar(15)
+  passwordHash      String    @map("password_hash")
+  role              Role      @default(CUSTOMER)
+  avatarUrl         String?   @map("avatar_url")
+  isActive          Boolean   @default(true) @map("is_active")
+  emailVerifiedAt   DateTime? @map("email_verified_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  refreshTokens     RefreshToken[]
+  staff             Staff?
+  appointments      Appointment[]
+  reviews           Review[]
+  photos            Photo[]
+  notifications     Notification[]
+  couponUsages      CouponUsage[]
+  auditLogs         AuditLog[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique @db.VarChar(512)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─── STAFF ────────────────────────────────────────────────
+
+model Staff {
+  id              String   @id @default(cuid())
+  userId          String   @unique @map("user_id")
+  bio             String?  @db.Text
+  specialization  String?  @db.VarChar(191)
+  experienceYears Int      @default(0) @map("experience_years")
+  isAvailable     Boolean  @default(true) @map("is_available")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services        StaffService[]
+  workingHours    WorkingHour[]
+  appointments    Appointment[]
+  reviews         Review[]
+
+  @@map("staff")
+}
+
+model WorkingHour {
+  id          String  @id @default(cuid())
+  staffId     String  @map("staff_id")
+  dayOfWeek   Int     @map("day_of_week") // 0=Sun, 1=Mon ... 6=Sat
+  startTime   String  @map("start_time")  // stored as "09:00"
+  endTime     String  @map("end_time")    // stored as "18:00"
+  isDayOff    Boolean @default(false) @map("is_day_off")
+
+  staff       Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, dayOfWeek])
+  @@map("working_hours")
+}
+
+// ─── SERVICES & CATEGORIES ────────────────────────────────
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @db.VarChar(100)
+  slug        String    @unique @db.VarChar(191)
+  description String?   @db.Text
+  imageUrl    String?   @map("image_url")
+  sortOrder   Int       @default(0) @map("sort_order")
+  isActive    Boolean   @default(true) @map("is_active")
+
+  services    Service[]
+
+  @@map("categories")
+}
+
+model Service {
+  id            String   @id @default(cuid())
+  categoryId    String   @map("category_id")
+  name          String   @db.VarChar(191)
+  description   String?  @db.Text
+  price         Decimal  @db.Decimal(10, 2)
+  durationMins  Int      @map("duration_mins")
+  imageUrl      String?  @map("image_url")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  category      Category       @relation(fields: [categoryId], references: [id])
+  staffServices StaffService[]
+  appointments  Appointment[]
+  photos        Photo[]
+
+  @@index([categoryId])
+  @@map("services")
+}
+
+model StaffService {
+  id        String @id @default(cuid())
+  staffId   String @map("staff_id")
+  serviceId String @map("service_id")
+
+  staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, serviceId])
+  @@map("staff_services")
+}
+
+// ─── APPOINTMENTS ─────────────────────────────────────────
+
+model Appointment {
+  id              String            @id @default(cuid())
+  userId          String            @map("user_id")
+  staffId         String            @map("staff_id")
+  serviceId       String            @map("service_id")
+  scheduledAt     DateTime          @map("scheduled_at")
+  durationMins    Int               @map("duration_mins")
+  priceAtBooking  Decimal           @map("price_at_booking") @db.Decimal(10, 2)
+  status          AppointmentStatus @default(PENDING)
+  notes           String?           @db.Text
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  user            User          @relation(fields: [userId], references: [id])
+  staff           Staff         @relation(fields: [staffId], references: [id])
+  service         Service       @relation(fields: [serviceId], references: [id])
+  payment         Payment?
+  review          Review?
+  couponUsages    CouponUsage[]
+
+  @@index([userId])
+  @@index([staffId])
+  @@index([scheduledAt])
+  @@map("appointments")
+}
+
+// ─── PAYMENTS & INVOICES ──────────────────────────────────
+
+model Payment {
+  id                  String        @id @default(cuid())
+  appointmentId       String        @unique @map("appointment_id")
+  amount              Decimal       @db.Decimal(10, 2)
+  currency            String        @default("INR") @db.VarChar(10)
+  status              PaymentStatus @default(PENDING)
+  method              PaymentMethod @default(RAZORPAY)
+  gatewayOrderId      String?       @map("gateway_order_id") @db.VarChar(191)
+  gatewayPaymentId    String?       @map("gateway_payment_id") @db.VarChar(191)
+  gatewaySignature    String?       @map("gateway_signature") @db.VarChar(512)
+  failureReason       String?       @map("failure_reason") @db.Text
+  paidAt              DateTime?     @map("paid_at")
+  createdAt           DateTime      @default(now()) @map("created_at")
+
+  appointment         Appointment   @relation(fields: [appointmentId], references: [id])
+  invoice             Invoice?
+
+  @@map("payments")
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  paymentId     String   @unique @map("payment_id")
+  invoiceNumber String   @unique @map("invoice_number") @db.VarChar(50)
+  pdfUrl        String?  @map("pdf_url")
+  issuedAt      DateTime @default(now()) @map("issued_at")
+
+  payment       Payment  @relation(fields: [paymentId], references: [id])
+
+  @@map("invoices")
+}
+
+// ─── REVIEWS ──────────────────────────────────────────────
+
+model Review {
+  id            String   @id @default(cuid())
+  appointmentId String   @unique @map("appointment_id")
+  userId        String   @map("user_id")
+  staffId       String   @map("staff_id")
+  rating        Int      // 1–5
+  comment       String?  @db.Text
+  isPublished   Boolean  @default(true) @map("is_published")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+  staff         Staff       @relation(fields: [staffId], references: [id])
+
+  @@index([staffId])
+  @@map("reviews")
+}
+
+// ─── PHOTOS ───────────────────────────────────────────────
+
+model Photo {
+  id            String   @id @default(cuid())
+  uploadedBy    String   @map("uploaded_by")
+  serviceId     String?  @map("service_id")
+  title         String?  @db.VarChar(191)
+  url           String   @db.VarChar(512)
+  thumbnailUrl  String?  @map("thumbnail_url") @db.VarChar(512)
+  publicId      String?  @map("public_id") @db.VarChar(191) // Cloudinary public_id
+  category      String?  @db.VarChar(100) // e.g. "hair", "nails", "makeup"
+  isFeatured    Boolean  @default(false) @map("is_featured")
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  uploader      User     @relation(fields: [uploadedBy], references: [id])
+  service       Service? @relation(fields: [serviceId], references: [id])
+
+  @@map("photos")
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  type      String   @db.VarChar(50) // "appointment_confirmed", "payment_success", etc.
+  title     String   @db.VarChar(191)
+  body      String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ─── COUPONS ──────────────────────────────────────────────
+
+model Coupon {
+  id              String       @id @default(cuid())
+  code            String       @unique @db.VarChar(50)
+  discountType    DiscountType @map("discount_type")
+  discountValue   Decimal      @map("discount_value") @db.Decimal(10, 2)
+  minOrderAmount  Decimal?     @map("min_order_amount") @db.Decimal(10, 2)
+  maxUses         Int?         @map("max_uses")
+  usedCount       Int          @default(0) @map("used_count")
+  expiresAt       DateTime?    @map("expires_at")
+  isActive        Boolean      @default(true) @map("is_active")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  usages          CouponUsage[]
+
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id            String   @id @default(cuid())
+  couponId      String   @map("coupon_id")
+  userId        String   @map("user_id")
+  appointmentId String   @map("appointment_id")
+  usedAt        DateTime @default(now()) @map("used_at")
+
+  coupon        Coupon      @relation(fields: [couponId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+
+  @@unique([couponId, userId])
+  @@map("coupon_usages")
+}
+
+// ─── AUDIT LOGS ───────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?  @map("user_id")
+  action      String   @db.VarChar(100) // "CREATE", "UPDATE", "DELETE", "LOGIN"
+  entityType  String   @map("entity_type") @db.VarChar(50) // "Appointment", "User" etc.
+  entityId    String?  @map("entity_id")
+  oldValues   Json?    @map("old_values")
+  newValues   Json?    @map("new_values")
+  ipAddress   String?  @map("ip_address") @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("audit_logs")
+}

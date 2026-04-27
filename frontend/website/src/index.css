@@ -1,1 +1,116 @@
-@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "DM Sans", system-ui, sans-serif;
+    background-color: #F5F0E8;
+    color: #1C3A2F;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Scrollbar ─────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #F5F0E8; }
+  ::-webkit-scrollbar-thumb { background: #C9A84C; border-radius: 3px; }
+
+  /* ── Dashboard body override ────────────── */
+  body.dashboard {
+    background-color: #0D0F14;
+    color: #E2E8F0;
+    font-family: "Sora", system-ui, sans-serif;
+  }
+  body.dashboard ::-webkit-scrollbar-track { background: #13151C; }
+}
+
+@layer components {
+  /* ── Reveal animation utility ─────────── */
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── Gold shimmer button ──────────────── */
+  .btn-gold {
+    @apply relative overflow-hidden bg-[#d97706] text-cream-50 font-body font-medium tracking-widest uppercase text-xs px-8 py-4 transition-all duration-300;
+  }
+  .btn-gold::after {
+    content: "";
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+    background-size: 200% 100%;
+  }
+  .btn-gold:hover::after { opacity: 1; animation: shimmer 0.7s ease forwards; }
+  .btn-gold:hover { @apply bg-gold-400 shadow-lg; transform: translateY(-2px); }
+
+  /* ── Outline ghost button ─────────────── */
+  .btn-ghost {
+    @apply border border-forest-800 text-forest-800 font-body font-medium tracking-widest uppercase text-xs px-8 py-4 transition-all duration-300;
+  }
+  .btn-ghost:hover { @apply bg-forest-800 text-cream-50; }
+
+  /* ── Section divider ──────────────────── */
+  .section-line {
+    @apply w-16 h-px bg-[#d97706] mx-auto my-6;
+  }
+
+  /* ── Dashboard card ───────────────────── */
+  .dash-card {
+    @apply rounded-2xl border border-slate-700/50 bg-obsidian-50 p-6 transition-all duration-300;
+  }
+  .dash-card:hover { @apply border-amber-600/30; }
+
+  /* ── Stat card glow ───────────────────── */
+  .stat-card {
+    @apply dash-card relative overflow-hidden;
+  }
+  .stat-card::before {
+    content: "";
+    @apply absolute top-0 right-0 w-24 h-24 rounded-full opacity-10;
+    background: radial-gradient(circle, #F59E0B, transparent);
+    transform: translate(30%, -30%);
+  }
+
+  /* ── Dashboard table row ──────────────── */
+  .dash-row { @apply border-b border-slate-800 hover:bg-slate-800/30 transition-colors duration-150; }
+
+  /* ── Input field styles ───────────────── */
+  .field-light {
+    @apply w-full bg-cream-200 border border-forest-100 text-forest-800 px-4 py-3 font-body text-sm focus:outline-none focus:border-gold-600 transition-colors placeholder-forest-400/60;
+  }
+  .field-dark {
+    @apply w-full bg-obsidian-100 border border-slate-700 text-slate-200 px-4 py-3 font-dash text-sm rounded-xl focus:outline-none focus:border-amber-500 transition-colors placeholder-slate-500;
+  }
+
+  /* ── Badge ────────────────────────────── */
+  .badge { @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-dash font-medium; }
+  .badge-pending  { @apply badge bg-amber-500/10 text-amber-400; }
+  .badge-confirmed{ @apply badge bg-emerald-500/10 text-emerald-400; }
+  .badge-completed{ @apply badge bg-blue-500/10 text-blue-400; }
+  .badge-cancelled{ @apply badge bg-red-500/10 text-red-400; }
+}
+
+/* ── Diagonal clip ────────────────────────── */
+.clip-diagonal { clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%); }
+.clip-diagonal-reverse { clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 100%); }
+
+/* ── Noise texture overlay ─────────────────── */
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ── Staggered reveal delays ──────────────── */
+.delay-100 { transition-delay: 100ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-500 { transition-delay: 500ms; }
