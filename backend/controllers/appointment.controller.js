@@ -84,22 +84,26 @@ exports.createAppointment = async (req, res, next) => {
     }
 
     // 4. Check no overlapping appointment for this staff slot
-    const endTime = new Date(scheduledDate.getTime() + service.durationMins * 60 * 1000);
-    const overlap = await prisma.appointment.findFirst({
+    // NOTE: endTime is not a DB column — we compute overlap using scheduledAt + durationMins
+    const newSlotEnd = new Date(scheduledDate.getTime() + service.durationMins * 60 * 1000);
+
+    // Fetch all active appointments for this staff on this day
+    const dayStart = new Date(scheduledDate); dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(scheduledDate); dayEnd.setHours(23, 59, 59, 999);
+    const existingAppts = await prisma.appointment.findMany({
       where: {
         staffId,
+        scheduledAt: { gte: dayStart, lte: dayEnd },
         status: { in: ["PENDING", "CONFIRMED", "IN_PROGRESS"] },
-        AND: [
-          { scheduledAt: { lt: endTime } },
-          {
-            // appointment ends after our start
-            scheduledAt: {
-              gte: new Date(scheduledDate.getTime() - service.durationMins * 60 * 1000),
-            },
-          },
-        ],
       },
+      select: { scheduledAt: true, durationMins: true },
     });
+
+    const overlap = existingAppts.some((appt) => {
+      const apptEnd = new Date(appt.scheduledAt.getTime() + appt.durationMins * 60 * 1000);
+      return scheduledDate < apptEnd && newSlotEnd > appt.scheduledAt;
+    });
+
     if (overlap) return next(createError("This time slot is already booked. Please choose another.", 409));
 
     // 5. Handle coupon
@@ -142,7 +146,7 @@ exports.createAppointment = async (req, res, next) => {
         durationMins: service.durationMins,
         priceAtBooking: finalPrice,
         notes: notes || null,
-        status: "PENDING",
+        status: "CONFIRMED", // Fix 8: auto-confirm since payment is at shop
       },
       include: {
         service: true,
@@ -344,5 +348,44 @@ exports.checkAvailability = async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+};
+
+// ── Fix 8 patch: sendConfirmationOnCreate ────────────────
+// This is called right after createAppointment creates the record.
+// Since status is now auto-CONFIRMED, we send the email immediately.
+// The main createAppointment function already does auditLog + coupon.
+// We append a notification here by monkey-patching the original export.
+
+const _origCreate = exports.createAppointment;
+exports.createAppointment = async (req, res, next) => {
+  // Capture the original response
+  const origJson = res.json.bind(res);
+  let appointmentData = null;
+
+  res.json = (body) => {
+    if (body?.success && body?.data) {
+      appointmentData = body.data;
+    }
+    return origJson(body);
+  };
+
+  await _origCreate(req, res, next);
+
+  // After response sent, fire notification (non-blocking)
+  if (appointmentData?.id) {
+    try {
+      const { PrismaClient } = require("@prisma/client");
+      const p = new PrismaClient();
+      await p.notification.create({
+        data: {
+          userId: appointmentData.userId,
+          type: "appointment_confirmed",
+          title: "Booking Confirmed!",
+          body: `Your ${appointmentData.service?.name || "appointment"} is confirmed for ${new Date(appointmentData.scheduledAt).toLocaleString("en-IN")}. Pay at the salon.`,
+        },
+      });
+      await p.$disconnect();
+    } catch { /* non-critical */ }
   }
 };

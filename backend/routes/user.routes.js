@@ -5,8 +5,8 @@ const router = require("express").Router();
 const { body, param } = require("express-validator");
 const { validate } = require("../middleware/validate");
 const { protect, authorize } = require("../middleware/auth");
-const { uploadAvatar, uploadLimiter } = require("../middleware/upload");
-const { uploadLimiter: uLimiter } = require("../middleware/rateLimiter");
+const { uploadAvatar } = require("../middleware/upload");
+const { uploadLimiter } = require("../middleware/rateLimiter");
 const c = require("../controllers/user.controller");
 
 // All routes require auth
@@ -27,7 +27,7 @@ router.put(
 );
 
 // ── POST /api/users/avatar ─── Upload own avatar
-router.post("/avatar", uLimiter, uploadAvatar, c.uploadAvatar);
+router.post("/avatar", uploadLimiter, uploadAvatar, c.uploadAvatar);
 
 // ── PUT  /api/users/change-password
 router.put(

@@ -1,70 +1,72 @@
 const rateLimit = require("express-rate-limit");
 
-// ── Helper to build a limiter ────────────────────────────
+// ── Helper ────────────────────────────────────────────────
 const buildLimiter = (windowMs, max, message) =>
   rateLimit({
     windowMs,
     max,
-    standardHeaders: true,  // Return rate limit info in RateLimit-* headers
+    standardHeaders: true,
     legacyHeaders: false,
+    // Skip rate limiting in development so testing is smooth
+    skip: () => process.env.NODE_ENV === "development",
     message: { success: false, message },
-    skipSuccessfulRequests: false,
   });
 
-// ── Global: 100 req / 15 min per IP ─────────────────────
+// ── Global: very generous for development ────────────────
+// In production these tighten automatically (NODE_ENV=production)
 const globalLimiter = buildLimiter(
   15 * 60 * 1000,
-  100,
+  process.env.NODE_ENV === "production" ? 200 : 10000,
   "Too many requests, please try again after 15 minutes."
 );
 
-// ── Auth: 5 attempts / 15 min (brute-force protection) ──
+// ── Auth: relaxed for dev testing ────────────────────────
 const authLimiter = buildLimiter(
   15 * 60 * 1000,
-  5,
+  process.env.NODE_ENV === "production" ? 10 : 10000,
   "Too many login attempts, please try again after 15 minutes."
 );
 
-// ── Register: 3 accounts / hour per IP ──────────────────
+// ── Register ─────────────────────────────────────────────
 const registerLimiter = buildLimiter(
   60 * 60 * 1000,
-  3,
-  "Too many accounts created from this IP, please try again after 1 hour."
+  process.env.NODE_ENV === "production" ? 5 : 10000,
+  "Too many accounts created from this IP."
 );
 
-// ── Password reset: 3 attempts / hour ───────────────────
+// ── Password reset ────────────────────────────────────────
 const passwordResetLimiter = buildLimiter(
   60 * 60 * 1000,
-  3,
-  "Too many password reset requests, please try again after 1 hour."
+  process.env.NODE_ENV === "production" ? 5 : 10000,
+  "Too many password reset requests."
 );
 
-// ── Appointment: 10 bookings / hour per user ────────────
+// ── Appointments ──────────────────────────────────────────
 const appointmentLimiter = buildLimiter(
   60 * 60 * 1000,
-  10,
-  "Too many booking requests, please slow down."
+  process.env.NODE_ENV === "production" ? 20 : 10000,
+  "Too many booking requests."
 );
 
-// ── Payment: 20 payment requests / hour ─────────────────
+// ── Payments ──────────────────────────────────────────────
 const paymentLimiter = buildLimiter(
   60 * 60 * 1000,
-  20,
-  "Too many payment requests, please try again later."
+  process.env.NODE_ENV === "production" ? 30 : 10000,
+  "Too many payment requests."
 );
 
-// ── Upload: 20 uploads / hour per user ──────────────────
+// ── Uploads ───────────────────────────────────────────────
 const uploadLimiter = buildLimiter(
   60 * 60 * 1000,
-  20,
-  "Upload limit reached, please try again after 1 hour."
+  process.env.NODE_ENV === "production" ? 30 : 10000,
+  "Upload limit reached."
 );
 
-// ── Admin: 200 req / 15 min (higher for dashboard) ──────
+// ── Admin ─────────────────────────────────────────────────
 const adminLimiter = buildLimiter(
   15 * 60 * 1000,
-  200,
-  "Too many admin requests, please try again after 15 minutes."
+  process.env.NODE_ENV === "production" ? 500 : 10000,
+  "Too many admin requests."
 );
 
 module.exports = {

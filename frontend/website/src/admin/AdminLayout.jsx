@@ -48,7 +48,7 @@ export default function AdminLayout() {
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
           {sidebarOpen && (
             <div className="flex flex-col leading-none">
-              <span className="font-display text-xl font-light text-cream-50 tracking-wider">Lumière</span>
+              <span className="font-display text-xl font-light text-cream-50 tracking-wider">Hairtown</span>
               <span className="font-body text-[8px] tracking-[0.3em] uppercase text-amber-500">Admin Panel</span>
             </div>
           )}

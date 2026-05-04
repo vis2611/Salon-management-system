@@ -66,6 +66,13 @@ export const staffAPI = {
   setHours: (id, hours) => api.put(`/staff/${id}/working-hours`, { hours }),
 };
 
+export const categoriesAPI = {
+  list: () => api.get("/services/categories"),
+  create: (d) => api.post("/services/categories", d),
+  update: (id, d) => api.put(`/services/categories/${id}`, d),
+  delete: (id) => api.delete(`/services/categories/${id}`),
+};
+
 export const appointmentsAPI = {
   list: (p) => api.get("/appointments", { params: p }),
   get: (id) => api.get(`/appointments/${id}`),

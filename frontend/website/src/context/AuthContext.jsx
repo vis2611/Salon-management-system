@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     const refreshToken = localStorage.getItem("refreshToken");
-    try { await authAPI.logout(refreshToken); } catch {}
+    try { await authAPI.logout(refreshToken); } catch { }
     localStorage.clear();
     setUser(null);
   };
@@ -43,7 +43,18 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, isAdmin: user?.role === "ADMIN", isStaff: user?.role === "STAFF" || user?.role === "ADMIN" }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser, // 🔥 ADD THIS
+        loading,
+        login,
+        logout,
+        register,
+        isAdmin: user?.role === "ADMIN",
+        isStaff: user?.role === "STAFF" || user?.role === "ADMIN"
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

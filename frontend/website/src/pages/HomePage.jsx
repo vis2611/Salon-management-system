@@ -816,7 +816,7 @@ export default function HomePage() {
 
             <div className={`hero-eyebrow ${heroReady ? "in" : ""}`}>
               <div className="eyebrow-line" />
-              <span className="eyebrow-text">Established 2018 · Pune, India</span>
+              <span className="eyebrow-text">Established 2019 · Nagpur, India</span>
             </div>
 
             <h1 className="hero-heading">
@@ -832,7 +832,7 @@ export default function HomePage() {
             </h1>
 
             <p className={`hero-sub ${heroReady ? "in" : ""}`}>
-              Lumière is Nagpur's destination for luxury hair, skin and wellness — where master artisans craft your most confident self.
+              Hairtown is Nagpur's destination for luxury hair, skin and wellness — where master artisans craft your most confident self.
             </p>
 
             <div className={`hero-ctas ${heroReady ? "in" : ""}`}>
@@ -849,10 +849,10 @@ export default function HomePage() {
           {/* Right mosaic */}
           <div className={`hero-mosaic ${heroReady ? "in" : ""}`}>
             {[
-              "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&q=85",
-              "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=85",
-              "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&q=85",
-              "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&q=85",
+              "https://groomie.in/salon_interior_dark.png",
+              "https://groomie.in/innovation_salon_real.png",
+              "https://image2url.com/images/1764942174673-e3de760f-9957-4382-b59c-fe8c86550560.jpg",
+              "https://images.openai.com/static-rsc-4/ovU44B1ccT_spVv1Uu4P0yXJc0sRbaMPLjC2M9JUxLR_AUajH83TN_nGhm6zBGgfMg06KgKYcJM9pA5QICYRDL6jc5PgUtKF5dVdtQh0aCWUclzEkTd6zjirhN-gDpKaRV16JG1yjIzYGi2EbwiXJdBJ2DAkZ2RPb7JmVzLNqYs5XMpWUKUWPWqhXtodt96L?purpose=fullsize",
             ].map((src, i) => (
               <div key={i} className="mosaic-img">
                 <img src={src} alt="" loading={i === 0 ? "eager" : "lazy"} />
@@ -896,7 +896,7 @@ export default function HomePage() {
         ════════════════════════════════════════════ */}
         <section className="about-section section grain" ref={aboutRef}>
           <div className="about-left">
-            <img src="https://plus.unsplash.com/premium_photo-1669675936121-6d3d42244ab5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c2Fsb258ZW58MHx8MHx8fDA%3D" alt="Salon interior" loading="lazy" />
+            <img src="https://images.openai.com/static-rsc-4/eDo9mB8ThVkI42K8mUCVIEX_J_lNu8qjS6y3M93uGL4e_-ASCH6UKlX1TCQoORosHmLjul0eCl0Om143K9-L9LjIZ7xfLc508kDjbSBw3CHWvMQ6PvvRc7qHz9n81Dg-DpRiuhyLwRruOBUulDjIl02mDFRXb4fgK6aSWb_kpBQosgwO6GGDA_f-GgoHYRDJ?purpose=fullsize" alt="Salon interior" loading="lazy" />
             <div className="about-overlay" />
             <div className="about-year">18</div>
           </div>
@@ -914,7 +914,7 @@ export default function HomePage() {
             </h2>
 
             <p className={`section-body reveal-up d2 ${aboutVisible ? "in" : ""}`}>
-              At Lumière, every appointment is a ritual. We combine cutting-edge techniques with time-honoured traditions to create transformations that last long after you leave our doors.
+              At Hairtown, every appointment is a ritual. We combine cutting-edge techniques with time-honoured traditions to create transformations that last long after you leave our doors.
             </p>
 
             <div className={`pillars reveal-up d3 ${aboutVisible ? "in" : ""}`}>
@@ -1056,7 +1056,7 @@ export default function HomePage() {
           <div className="reviews-body">
             <div className={`review-main reveal-up d2 ${reviewVisible ? "in" : ""}`}>
               {(reviewList.length > 0 ? reviewList : [
-                { id: "1", comment: "Walking into Lumière feels like stepping into a different world. Priya understood exactly what I wanted — and delivered something even better.", user: { name: "Sneha Kulkarni" }, rating: 5 },
+                { id: "1", comment: "Walking into Hairtown feels like stepping into a different world. Priya understood exactly what I wanted — and delivered something even better.", user: { name: "Sneha Kulkarni" }, rating: 5 },
                 { id: "2", comment: "The keratin treatment completely transformed my hair. Six months later it still looks incredible. Worth every rupee.", user: { name: "Divya Nair" }, rating: 5 },
                 { id: "3", comment: "My bridal makeup was flawless from 7am to midnight. I cried happy tears when I saw myself. Pure magic.", user: { name: "Meera Iyer" }, rating: 5 },
               ]).map((r, i) => (
@@ -1108,7 +1108,7 @@ export default function HomePage() {
             SECTION 6 — CTA
         ════════════════════════════════════════════ */}
         <section className="cta-section section" ref={ctaRef}>
-          <div className="cta-bg-text">LUMIÈRE</div>
+          <div className="cta-bg-text">HAIRTOWN</div>
           <div className="cta-content">
             <p className={`cta-tag reveal-up ${ctaVisible ? "in" : ""}`}>Your Journey Begins Here</p>
             <h2 className={`cta-heading reveal-up d1 ${ctaVisible ? "in" : ""}`}>
@@ -1124,7 +1124,7 @@ export default function HomePage() {
               </Link>
             </div>
             <div className={`reveal-up d4 ${ctaVisible ? "in" : ""}`} style={{ marginTop: "24px", fontSize: "11px", color: "rgba(6,6,6,0.45)", letterSpacing: "0.05em" }}>
-              Or call us · +91 98765 43210
+              Or call us · +91 7947137549
             </div>
           </div>
         </section>

@@ -34,14 +34,36 @@ exports.getProfile = async (req, res, next) => {
 // ── PUT /api/users/profile ────────────────────────────────
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { name, phone } = req.body;
+    const { name, phone, avatarUrl } = req.body;
+
+    // Build update data — only include fields that were sent
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (phone !== undefined) updateData.phone = phone || null;
+
+    // Issue 3 fix: allow explicit null to REMOVE the avatar
+    // When avatarUrl === null (sent as null in JSON body), clear it in DB
+    if (avatarUrl === null || avatarUrl === "null") {
+      updateData.avatarUrl = null;
+
+      // Also delete from Cloudinary if we have a public_id
+      try {
+        const { deleteFromCloudinary } = require("../middleware/upload");
+        const current = await prisma.user.findUnique({
+          where: { id: req.user.id }, select: { avatarUrl: true }
+        });
+        if (current?.avatarUrl) {
+          // Extract publicId from Cloudinary URL: .../salon/avatars/abc123.jpg → salon/avatars/abc123
+          const parts = current.avatarUrl.split("/");
+          const publicId = parts.slice(-2).join("/").replace(/\.[^.]+$/, "");
+          await deleteFromCloudinary(publicId).catch(() => { }); // non-blocking
+        }
+      } catch { /* if cloudinary not set up, skip */ }
+    }
 
     const user = await prisma.user.update({
       where: { id: req.user.id },
-      data: {
-        ...(name && { name }),
-        ...(phone !== undefined && { phone: phone || null }),
-      },
+      data: updateData,
       select: SAFE_USER_SELECT,
     });
 

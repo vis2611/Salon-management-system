@@ -28,7 +28,7 @@ export function RegisterPage() {
       <div className="flex-1 flex items-center justify-center px-6 pt-24 pb-16">
         <div className="w-full max-w-md animate-fade-up">
           <div className="mb-10 text-center">
-            <h1 className="font-display text-4xl text-forest-800 mb-2">Join Lumière</h1>
+            <h1 className="font-display text-4xl text-forest-800 mb-2">Join Hairtown</h1>
             <p className="font-body text-sm text-forest-400/60">Create your account and book your first appointment</p>
           </div>
           {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-body px-4 py-3 mb-6">{error}</div>}

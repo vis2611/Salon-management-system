@@ -14,7 +14,7 @@ router.get(
   [
     query("categoryId").optional().isString(),
     query("page").optional().isInt({ min: 1 }),
-    query("limit").optional().isInt({ min: 1, max: 50 }),
+    query("limit").optional().toInt().isInt({ min: 1, max: 100 }).withMessage("Limit must be between 1 and 100"),
     query("search").optional().isString().isLength({ max: 100 }),
   ],
   validate,

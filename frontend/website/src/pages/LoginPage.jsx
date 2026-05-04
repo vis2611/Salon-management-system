@@ -30,7 +30,7 @@ export function LoginPage() {
         <div className="hidden lg:flex lg:w-1/2 bg-forest-900 noise relative items-center justify-center overflow-hidden">
           <div className="absolute top-1/3 left-1/3 w-64 h-64 rounded-full bg-[#d97706]/10 blur-3xl animate-float" />
           <div className="relative text-center px-16">
-            <div className="font-display text-6xl font-light text-cream-50 tracking-wider mb-2">Lumière</div>
+            <div className="font-display text-6xl font-light text-cream-50 tracking-wider mb-2">Hairtown</div>
             <div className="font-body text-[10px] tracking-[0.4em] uppercase text-gold-400 mb-10">Salon & Spa</div>
             <div className="w-12 h-px bg-[#d97706] mx-auto mb-8" />
             <p className="font-display text-xl italic text-cream-200/50 leading-relaxed">
@@ -66,7 +66,7 @@ export function LoginPage() {
             </form>
 
             <p className="font-body text-sm text-center text-forest-400/60 mt-8">
-              New to Lumière?{" "}
+              New to Hairtown?{" "}
               <Link to="/register" className="text-gold-600 hover:text-gold-800 transition-colors">Create an account</Link>
             </p>
           </div>
